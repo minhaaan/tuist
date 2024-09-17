@@ -228,7 +228,8 @@ public class GraphTraverser: GraphTraversing {
             .appExtension, .stickerPackExtension, .watch2Extension, .tvTopShelfExtension, .messagesExtension,
         ]
         return Set(
-            directLocalTargetDependencies(path: path, name: name)
+            directTargetDependencies(path: path, name: name)
+//            directLocalTargetDependencies(path: path, name: name)
                 .filter { validProducts.contains($0.target.product) }
         )
     }
@@ -305,6 +306,9 @@ public class GraphTraverser: GraphTraversing {
             from: .target(name: name, path: path)
         ) })
 
+        let aaa: (GraphDependency) -> Bool = { dependency in
+            return self.isDependencyDynamicTarget(dependency: dependency) || self.canDependencyEmbedBinaries(dependency: dependency)
+        }
         /// Other targets' frameworks.
         var otherTargetFrameworks = filterDependencies(
             from: .target(name: name, path: path),
@@ -1121,6 +1125,7 @@ public class GraphTraverser: GraphTraversing {
         case let .target(name, path):
             guard let target = target(path: path, name: name) else { return false }
             return target.target.product.isDynamic
+//            || target.target.product == .appExtension
         case .sdk: return false
         }
     }
@@ -1173,6 +1178,7 @@ public class GraphTraverser: GraphTraversing {
     func canEmbedFrameworks(target: Target) -> Bool {
         let validProducts: [Product] = [
             .app,
+//            .appExtension,
             .watch2App,
             .appClip,
             .unitTests,
